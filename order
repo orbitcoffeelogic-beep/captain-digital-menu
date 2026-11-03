@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pesanan Digital - Captain.co.ch</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: League Spartan, Inter & JetBrains Mono -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&family=League+Spartan:wght@600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        captain: {
+                            bg: '#ebf3f7',
+                            cyan: '#0099dc',
+                            cyanDark: '#007bb5',
+                            cyanLight: '#e6f6fc',
+                            navy: '#0b4f6c',
+                            pink: '#ff1e7a',
+                            pinkLight: '#ffeef5',
+                            dark: '#0f172a',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        heading: ['League Spartan', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .tap-highlight-transparent { -webkit-tap-highlight-color: transparent; }
+        
+        /* Stitch Edition Design System */
+        .bg-stitch-grid {
+            background-color: #ebf3f7;
+            background-image: 
+                linear-gradient(to right, rgba(11, 79, 108, 0.05) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(11, 79, 108, 0.05) 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+        .stitch-card {
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 20px -2px rgba(11, 79, 108, 0.06), 0 2px 6px -1px rgba(11, 79, 108, 0.04);
+        }
+        .stitch-input {
+            background-color: #ffffff;
+            border: 1.5px solid #cbd5e1;
+            transition: all 0.2s ease;
+        }
+        .stitch-input:focus {
+            border-color: #0099dc;
+            box-shadow: 0 0 0 3px rgba(0, 153, 220, 0.15);
+            outline: none;
+        }
+        .captain-gradient {
+            background: linear-gradient(135deg, #00a8e8 0%, #0088cc 100%);
+            box-shadow: 0 6px 18px -3px rgba(0, 153, 220, 0.35);
+        }
+        .brand-title-shadow {
+            letter-spacing: -0.03em;
+        }
+    </style>
+</head>
+<body class="bg-stitch-grid text-slate-800 font-sans antialiased min-h-screen flex flex-col justify-between selection:bg-captain-cyan selection:text-white relative overflow-x-hidden">
+
+    <!-- WATERMARK BACKGROUND -->
+    <div class="fixed top-16 -left-10 pointer-events-none select-none z-0 opacity-[0.04] font-heading font-extrabold text-[110px] leading-[0.85] text-captain-navy uppercase tracking-tighter">
+        MENU<br>PESANAN<br>DIGITAL
+    </div>
+
+    <!-- KONFIGURASI APLIKASI (MINUMAN & MAKANAN) -->
+    <script>
+        const APP_CONFIG = {
+            storeName: "Captain",
+            storeSub: "coffee x chill",
+            tagline: "Freshly Brewed Everyday",
+            whatsappNumber: "628983610492", 
+            totalTables: 11,
+            defaultTable: "01",
+            
+            // Konfigurasi 2 Level Tab
+            categories: {
+                minuman: [
+                    { id: 'all-minuman', name: 'Semua Minuman', icon: 'fa-border-all' },
+                    { id: 'bc', name: 'Barista Choice', icon: 'fa-award' },
+                    { id: 'coffee', name: 'Coffee Series', icon: 'fa-mug-hot' },
+                    { id: 'latte', name: 'Non-Coffee : Latte', icon: 'fa-blender' },
+                    { id: 'tea', name: 'Non-Coffee : Tea', icon: 'fa-leaf' },
+                    { id: 'squash', name: 'Non-Coffee : Squash', icon: 'fa-martini-glass-citrus' },
+                ],
+                makanan: [
+                    { id: 'all-makanan', name: 'Semua Makanan', icon: 'fa-border-all' },
+                    { id: 'chef', name: 'Chef Approval', icon: 'fa-star' },
+                    { id: 'hangout', name: 'Hangout Meals', icon: 'fa-bowl-rice' },
+                    { id: 'indomie', name: 'Indomie', icon: 'fa-bowl-food' },
+                    { id: 'snack', name: 'Snacks', icon: 'fa-cookie-bite' },
+                    { id: 'manis', name: 'Kudapan Manis', icon: 'fa-stroopwafel' },
+                    { id: 'tahu', name: 'Sekumpulan Tahu', icon: 'fa-cubes' },
+                    { id: 'tambahan', name: 'Tambahan', icon: 'fa-plus' },
+                ]
+            },
+
+            menuItems: [
+                // ==================== 🍹 DAFTAR MINUMAN ====================
+                { id: 'bc1', name: 'Specialty Pour Over', price: 18000, category: 'bc', mainTab: 'minuman', description: 'Seduhan manual V60 menonjolkan karakter rasa asli dan aroma kompleks biji kopi pilihan.', image: 'https://images.unsplash.com/photo-1544787219-7f47ccb76574?auto=format&fit=crop&w=600&q=80', options: { Serv: ['Hot', 'Iced'] } },
+                { id: 'bc2', name: 'Es Kopi Susu Sejawat', price: 18000, category: 'bc', mainTab: 'minuman', description: 'Perpaduan espresso bold, susu segar creamy, dan manis legit gula aren alami.', badge: 'Best Seller', image: 'https://raw.githubusercontent.com/kartarjatiwuni-lab/CaptainMenu2026/main/sejawat.png', options: { Ice: ['Less', 'Regular', 'Extra'] } },
+                { id: 'bc3', name: 'Dirty Latte', price: 22000, category: 'bc', mainTab: 'minuman', description: 'Sensasi kontras susu segar super dingin dengan siraman espresso hangat pekat di atasnya.', badge: 'Populer', image: 'https://images.unsplash.com/photo-1461023058943-07fcbe16d735?auto=format&fit=crop&w=600&q=80', options: { Sugar: ['No Sugar', 'Regular'] } },
+                { id: 'cf1', name: 'Single Shot Spro', price: 13000, category: 'coffee', mainTab: 'minuman', description: 'Satu shot ekstrak kopi murni dengan crema tebal untuk suntikan fokus instan.', image: 'https://images.unsplash.com/photo-1510591509098-f4fdc6d0ff04?auto=format&fit=crop&w=600&q=80', options: { Serv: ['Hot', 'Iced'], Beans: ['House Blend', 'Arabica +2000'] } },
+                { id: 'cf2', name: 'Double Shot Spro', price: 15000, category: 'coffee', mainTab: 'minuman', description: 'Dua shot espresso pekat dengan karakter body penuh bagi penikmat kopi sejati.', image: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=600&q=80', options: { Serv: ['Hot', 'Iced'], Beans: ['House Blend', 'Arabica +2000'] } },
+                { id: 'cf3', name: 'Americano', price: 15000, category: 'coffee', mainTab: 'minuman', description: 'Espresso pilihan yang dipadukan air murni, menghasilkan profil kopi yang clean dan segar.', badge: 'Best Seller', image: 'https://images.unsplash.com/photo-1551030173-122aabc4489c?auto=format&fit=crop&w=600&q=80', options: { Serv: ['Hot', 'Iced'], Beans: ['House Blend', 'Arabica +2000'] } },
+                { id: 'cf4', name: 'Magic Latte', price: 20000, category: 'coffee', mainTab: 'minuman', description: 'Racikan double ristretto dengan takaran susu presisi, lebih intens namun tetap silky.', image: 'https://images.unsplash.com/photo-1534778101976-62847782c213?auto=format&fit=crop&w=600&q=80', options: { Serv: ['Hot', 'Iced'], Beans: ['House Blend', 'Arabica +2000'] } },
+                { id: 'cf5', name: 'Cappucino', price: 20000, category: 'coffee', mainTab: 'minuman', description: 'Harmoni klasik espresso, susu hangat, dan lapisan microfoam tebal yang lembut.', badge: 'Populer', image: 'https://images.unsplash.com/photo-1572442388796-11668a67e53d?auto=format&fit=crop&w=600&q=80', options: { Serv: ['Hot', 'Iced'], Beans: ['House Blend', 'Arabica +2000'] } },
+                { id: 'cf6', name: 'Mochacino', price: 20000, category: 'coffee', mainTab: 'minuman', description: 'Perpaduan pas antara pahit-manis cokelat pilihan, espresso, dan susu segar.', image: 'https://images.unsplash.com/photo-1578314675249-a6910f80cc4e?auto=format&fit=crop&w=600&q=80', options: { Serv: ['Hot', 'Iced'] } },
+                { id: 'cf7', name: 'Matcha Fusion', price: 20000, category: 'coffee', mainTab: 'minuman', description: 'Kombinasi unik matcha Jepang earthy dengan tendangan shot espresso yang berani.', image: 'https://images.unsplash.com/photo-1536256263959-770b48d82b0a?auto=format&fit=crop&w=600&q=80', options: { Serv: ['Hot', 'Iced'] } },
+                { id: 'cf8', name: 'Banana Fusion', price: 20000, category: 'coffee', mainTab: 'minuman', description: 'Kopi susu lembut dengan sentuhan manis-harum pisang yang bikin ketagihan.', image: 'https://images.unsplash.com/photo-1517701604599-bb29b565090c?auto=format&fit=crop&w=600&q=80', options: { Serv: ['Hot', 'Iced'] } },
+                { id: 'cf9', name: 'Caramel Latte', price: 18000, category: 'coffee', mainTab: 'minuman', description: 'Kelembutan caffe latte dengan manis-gurih sirup karamel panggang.', image: 'https://images.unsplash.com/photo-1485808191679-5f86510681a2?auto=format&fit=crop&w=600&q=80', options: { Serv: ['Hot', 'Iced'] } },
+                { id: 'cf10', name: 'Vanilla Latte', price: 18000, category: 'coffee', mainTab: 'minuman', description: 'Espresso dan susu creamy dengan aroma vanila yang manis menenangkan.', image: 'https://images.unsplash.com/photo-1570968915860-54d5c301fa9f?auto=format&fit=crop&w=600&q=80', options: { Serv: ['Hot', 'Iced'] } },
+                { id: 'cf11', name: 'Hazelnut Latte', price: 18000, category: 'coffee', mainTab: 'minuman', description: 'Paduan kopi susu lembut dengan sensasi kacang hazelnut yang harum dan gurih.', image: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=600&q=80', options: { Serv: ['Hot', 'Iced'] } },
+                { id: 'cf12', name: 'Kopi Susu Harian', price: 18000, category: 'coffee', mainTab: 'minuman', description: 'Racikan kopi susu klasik yang pas dan ringan untuk teman produktif setiap hari.', image: 'https://images.unsplash.com/photo-1541167760496-1628856ab772?auto=format&fit=crop&w=600&q=80' },
+                { id: 'cf13', name: 'Tubruk Robusta', price: 10000, category: 'coffee', mainTab: 'minuman', description: 'Seduhan kopi robusta tradisional dengan aroma kuat dan karakter mantap.', image: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=600&q=80' },
+                { id: 'cf14', name: 'Tubruk Robusta Susu', price: 13000, category: 'coffee', mainTab: 'minuman', description: 'Kopi tubruk robusta hangat yang berpadu manis dan legitnya susu kental.', image: 'https://images.unsplash.com/photo-1512568400610-62da28bc8a13?auto=format&fit=crop&w=600&q=80' },
+                { id: 'cf15', name: 'Tubruk Robusta Coklat', price: 15000, category: 'coffee', mainTab: 'minuman', description: 'Kombinasi klasik kopi tubruk robusta dengan sentuhan cokelat yang nikmat.', image: 'https://images.unsplash.com/photo-1544787219-7f47ccb76574?auto=format&fit=crop&w=600&q=80' },
+                { id: 'nc1', name: 'Strawberry Latte', price: 16000, category: 'latte', mainTab: 'minuman', description: 'Segarnya buah stroberi manis berpadu dengan susu dingin yang super creamy.', image: 'https://images.unsplash.com/photo-1579954115545-a95591f28bfc?auto=format&fit=crop&w=600&q=80' },
+                { id: 'nc2', name: 'Mango Latte', price: 16000, category: 'latte', mainTab: 'minuman', description: 'Manis tropis buah mangga segar dalam balutan susu murni yang lembut.', image: 'https://images.unsplash.com/photo-1546173159-315724a31696?auto=format&fit=crop&w=600&q=80' },
+                { id: 'nc3', name: 'Choco Latte', price: 16000, category: 'latte', mainTab: 'minuman', description: 'Minuman cokelat kaya rasa dan lembut yang pas dinikmati hangat maupun dingin.', image: 'https://i.ibb.co.com/nsHjFMb8/choco-latte.png', options: { Serv: ['Hot', 'Iced'] } },
+                { id: 'nc4', name: 'Matcha Latte', price: 16000, category: 'latte', mainTab: 'minuman', description: 'Teh hijau matcha pilihan dengan tekstur susu silky yang menenangkan.', badge: 'Populer', image: 'https://images.unsplash.com/photo-1515823064-d6e0c04616a7?auto=format&fit=crop&w=600&q=80', options: { Serv: ['Hot', 'Iced'] } },
+                { id: 'nc5', name: 'Red Velvet Latte', price: 16000, category: 'latte', mainTab: 'minuman', description: 'Rasa khas red velvet manis creamy layaknya menikmati cake dalam gelas.', image: 'https://images.unsplash.com/photo-1586788680434-30d324b2d46f?auto=format&fit=crop&w=600&q=80', options: { Serv: ['Hot', 'Iced'] } },
+                { id: 'nc6', name: 'Taro Latte', price: 16000, category: 'latte', mainTab: 'minuman', description: 'Perpaduan manis-gurih ubi ungu taro yang harum dengan susu segar.', image: 'https://images.unsplash.com/photo-1558857563-b371033873b8?auto=format&fit=crop&w=600&q=80', options: { Serv: ['Hot', 'Iced'] } },
+                { id: 'nc7', name: 'Choco Hazelnut', price: 18000, category: 'latte', mainTab: 'minuman', description: 'Cokelat pekat berpadu dengan gurihnya kacang hazelnut yang mewah di lidah.', image: 'https://images.unsplash.com/photo-1572490122747-3968b75cc699?auto=format&fit=crop&w=600&q=80', options: { Serv: ['Hot', 'Iced'] } },
+                { id: 'nc8', name: 'Choco Banana', price: 18000, category: 'latte', mainTab: 'minuman', description: 'Manisnya cokelat creamy dengan aroma pisang segar yang menyenangkan.', image: 'https://images.unsplash.com/photo-1563805042-7684c019e1cb?auto=format&fit=crop&w=600&q=80', options: { Serv: ['Hot', 'Iced'] } },
+                { id: 'nc9', name: 'Matcha Crunch', price: 18000, category: 'latte', mainTab: 'minuman', description: 'Matcha latte dingin dengan taburan remahan renyah yang bikin seru di setiap tegukan.', image: 'https://images.unsplash.com/photo-1536256263959-770b48d82b0a?auto=format&fit=crop&w=600&q=80' },
+                { id: 'tea1', name: 'Milk Tea', price: 16000, category: 'tea', mainTab: 'minuman', description: 'Seduhan teh pilihan yang harum berpadu dengan kelembutan susu segar.', image: 'https://images.unsplash.com/photo-1558857563-b371033873b8?auto=format&fit=crop&w=600&q=80' },
+                { id: 'tea2', name: 'Lemon Tea', price: 16000, category: 'tea', mainTab: 'minuman', description: 'Perpaduan teh dingin dan perasan lemon segar pengusir dahaga.', image: 'https://images.unsplash.com/photo-1556679343-c7306c1976bc?auto=format&fit=crop&w=600&q=80' },
+                { id: 'tea3', name: 'Mango Tea', price: 16000, category: 'tea', mainTab: 'minuman', description: 'Teh dingin menyegarkan dengan sentuhan manis-asam buah mangga tropis.', image: 'https://images.unsplash.com/photo-1499638673689-79a0b5115d87?auto=format&fit=crop&w=600&q=80' },
+                { id: 'tea4', name: 'Lychee Tea', price: 16000, category: 'tea', mainTab: 'minuman', description: 'Teh harum dengan rasa manis khas buah leci yang sejuk dan menyegarkan.', image: 'https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&w=600&q=80' },
+                { id: 'tea5', name: 'Strawberry Tea', price: 16000, category: 'tea', mainTab: 'minuman', description: 'Kesegaran teh klasik dengan sensasi buah stroberi yang manis-asam.', image: 'https://images.unsplash.com/photo-1560512823-829485b8bf24?auto=format&fit=crop&w=600&q=80' },
+                { id: 'sq1', name: 'Lemon Squash', price: 16000, category: 'squash', mainTab: 'minuman', description: 'Soda dingin berkilau dengan perasan lemon segar yang membangkitkan semangat.', image: 'https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&w=600&q=80' },
+                { id: 'sq2', name: 'Mango Squash', price: 16000, category: 'squash', mainTab: 'minuman', description: 'Sensasi soda segar berpadu dengan manisnya rasa mangga yang ceria.', image: 'https://images.unsplash.com/photo-1546173159-315724a31696?auto=format&fit=crop&w=600&q=80' },
+                { id: 'sq3', name: 'Lychee Squash', price: 16000, category: 'squash', mainTab: 'minuman', description: 'Manisnya leci dalam balutan soda dingin yang super menyegarkan.', image: 'https://images.unsplash.com/photo-1551024709-8f23befc6f87?auto=format&fit=crop&w=600&q=80' },
+                { id: 'sq4', name: 'Strawberry Squash', price: 16000, category: 'squash', mainTab: 'minuman', description: 'Favorit pelepas dahaga! Paduan soda dingin dan stroberi segar yang bikin melek.', badge: 'Best Seller', image: 'https://images.unsplash.com/photo-1560512823-829485b8bf24?auto=format&fit=crop&w=600&q=80' },
+
+                // ==================== 🍽️ DAFTAR MAKANAN ====================
+                { id: 'chef1', name: 'Chicken Blackpepper', price: 20000, category: 'chef', mainTab: 'makanan', description: 'Potongan ayam renyah berbalut saus lada hitam pekat yang gurih dan menghangatkan.', badge: 'Populer', image: 'https://i.ibb.co.com/N2RY7nrs/chicken-blackpepper.png' },
+                { id: 'chef2', name: 'Mie Nyemek', price: 16000, category: 'chef', mainTab: 'makanan', description: 'Olahan mi bumbu medok dengan kuah kental gurih khas angkringan yang nagih.', image: 'https://images.unsplash.com/photo-1612929633738-8fe01f72810c?auto=format&fit=crop&w=600&q=80', options: { Pedas: ['Rendah', 'Sedang', 'Pedas'] } },
+                { id: 'chef3', name: 'Tahu Gejrot', price: 12000, category: 'chef', mainTab: 'makanan', description: 'Potongan tahu pong disiram kuah asam pedas manis segar beraroma bawang.', image: 'https://images.unsplash.com/photo-1626200419143-f28427e1f13b?auto=format&fit=crop&w=600&q=80' },
+                { id: 'hm1', name: 'Tongkol Suwir', price: 16000, category: 'hangout', mainTab: 'makanan', description: 'Suwiran ikan tongkol bumbu pedas gurih yang pas disantap dengan nasi hangat.', image: 'https://i.ibb.co.com/Y457pv73/tongkol-suwir.png' },
+                { id: 'hm2', name: 'Telor Crispy', price: 16000, category: 'hangout', mainTab: 'makanan', description: 'Telur dadar tipis digoreng garing renyah dengan paduan bumbu gurih rahasia.', image: 'https://i.ibb.co.com/Hf4fh1Qd/telor-crispy.png' },
+                { id: 'hm3', name: 'Nasi Kulit Ayam', price: 20000, category: 'hangout', mainTab: 'makanan', description: 'Nasi hangat dipadu kulit ayam goreng super renyah dan sambal pilihan.', image: 'https://i.ibb.co.com/4wst1xPc/kulit-crispy.png' },
+                { id: 'hm4', name: 'Chicken Blackpepper', price: 20000, category: 'hangout', mainTab: 'makanan', description: 'Potongan ayam renyah berbalut saus lada hitam pekat yang gurih dan menghangatkan.', badge: 'Populer', image: 'https://images.unsplash.com/photo-1588168333986-5078d3ae3976?auto=format&fit=crop&w=600&q=80' },
+                { id: 'hm5', name: 'Ayam Cabe Garam', price: 20000, category: 'hangout', mainTab: 'makanan', description: 'Daging ayam renyah ditumis dengan paduan cabai, bawang putih, dan garam gurih.', image: 'https://images.unsplash.com/photo-1623653387945-2fd25214f8fc?auto=format&fit=crop&w=600&q=80', options: { Pedas: ['Rendah', 'Sedang', 'Pedas'] } },
+                { id: 'ind1', name: 'Indomie Goreng Telur', price: 14000, category: 'indomie', mainTab: 'makanan', description: 'Indomie goreng andalan disajikan lengkap dengan telur pilihan.', image: 'https://images.unsplash.com/photo-1612929633738-8fe01f72810c?auto=format&fit=crop&w=600&q=80' },
+                { id: 'ind2', name: 'Indomie Kuah Telur', price: 14000, category: 'indomie', mainTab: 'makanan', description: 'Indomie kuah hangat gurih berpadu dengan telur bernutrisi.', image: 'https://images.unsplash.com/photo-1552611052-33e04de081de?auto=format&fit=crop&w=600&q=80' },
+                { id: 'ind3', name: 'Indomie Nyemek', price: 16000, category: 'indomie', mainTab: 'makanan', description: 'Indomie dengan bumbu ekstra dan kuah kental nyemek yang bikin nagih.', image: 'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?auto=format&fit=crop&w=600&q=80', options: { Pedas: ['Rendah', 'Sedang', 'Pedas'] } },
+                { id: 'sn1', name: 'Mix Platter', price: 18000, category: 'snack', mainTab: 'makanan', description: 'Kombinasi ragam camilan gorengan lezat dalam satu porsi besar untuk berbagi.', image: 'https://images.unsplash.com/photo-1625937712144-55ff22c06987?auto=format&fit=crop&w=600&q=80' },
+                { id: 'sn2', name: 'Kentang Goreng', price: 14000, category: 'snack', mainTab: 'makanan', description: 'Potongan kentang renyah di luar, lembut di dalam, bertabur bumbu gurih.', image: 'https://images.unsplash.com/photo-1576107232684-1279f390859f?auto=format&fit=crop&w=600&q=80' },
+                { id: 'sn3', name: 'Dimsum', price: 16000, category: 'snack', mainTab: 'makanan', description: 'Kukusan dimsum ayam lembut nan juicy, disajikan hangat dengan saus.', image: 'https://i.ibb.co.com/QBgR6rD/dimsum.png' },
+                { id: 'sn4', name: 'Wonton', price: 16000, category: 'snack', mainTab: 'makanan', description: 'Pangsit renyah gurih dengan isian daging ayam berlimpah.', image: 'https://images.unsplash.com/photo-1563379926898-05f45c51040c?auto=format&fit=crop&w=600&q=80' },
+                { id: 'sn5', name: 'Tempe Mendoan', price: 12000, category: 'snack', mainTab: 'makanan', description: 'Tempe irisan tipis digoreng tepung setengah matang basah khas banyumasan.', image: 'https://images.unsplash.com/photo-1626200419143-f28427e1f13b?auto=format&fit=crop&w=600&q=80' },
+                { id: 'sn6', name: 'Sempol Ayam', price: 12000, category: 'snack', mainTab: 'makanan', description: 'Jajanan gurih sempol daging ayam yang empuk dicelup balutan telur.', image: 'https://images.unsplash.com/photo-1598514982205-f36b96d1e8d4?auto=format&fit=crop&w=600&q=80' },
+                { id: 'sn7', name: 'Onion Ring', price: 12000, category: 'snack', mainTab: 'makanan', description: 'Irisan bawang bombay berbalut tepung krispi yang renyah dan manis alami.', image: 'https://images.unsplash.com/photo-1639024470712-421731eb18ba?auto=format&fit=crop&w=600&q=80' },
+                { id: 'sn8', name: 'Cireng', price: 12000, category: 'snack', mainTab: 'makanan', description: 'Aci digoreng krispi dengan tekstur super kenyal dan gurih di dalam.', image: 'https://images.unsplash.com/photo-1626200419143-f28427e1f13b?auto=format&fit=crop&w=600&q=80' },
+                { id: 'sn9', name: 'Cireng Isi', price: 14000, category: 'snack', mainTab: 'makanan', description: 'Cireng kenyal dengan isian ayam suwir pedas mercon di dalamnya.', image: 'https://images.unsplash.com/photo-1598514982205-f36b96d1e8d4?auto=format&fit=crop&w=600&q=80' },
+                { id: 'sn10', name: 'Risol Mayo', price: 12000, category: 'snack', mainTab: 'makanan', description: 'Kulit risol panir renyah berisi paduan sosis, telur, dan lumeran mayones.', image: 'https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?auto=format&fit=crop&w=600&q=80' },
+                { id: 'mn1', name: 'Donat Kentang', price: 8000, category: 'manis', mainTab: 'makanan', description: 'Donat empuk berbahan kentang dengan taburan halus gula bubuk manis.', image: 'https://images.unsplash.com/photo-1551024601-bec78aea704b?auto=format&fit=crop&w=600&q=80' },
+                { id: 'mn2', name: 'Roti Maryam Ori', price: 12000, category: 'manis', mainTab: 'makanan', description: 'Roti pipih berserat dengan rasa gurih mentega yang khas dan lezat.', image: 'https://images.unsplash.com/photo-1509365465985-25d11c17e812?auto=format&fit=crop&w=600&q=80' },
+                { id: 'mn3', name: 'Roti Maryam Coklat', price: 13000, category: 'manis', mainTab: 'makanan', description: 'Roti maryam legit dengan paduan isian lumeran cokelat hangat.', image: 'https://images.unsplash.com/photo-1587314168485-3236d6710814?auto=format&fit=crop&w=600&q=80' },
+                { id: 'th1', name: 'Tahu Baso', price: 12000, category: 'tahu', mainTab: 'makanan', description: 'Tahu padat berisi adonan bakso daging sapi yang kenyal dan gurih kaldu.', image: 'https://images.unsplash.com/photo-1626200419143-f28427e1f13b?auto=format&fit=crop&w=600&q=80' },
+                { id: 'th2', name: 'Tahu Walik', price: 12000, category: 'tahu', mainTab: 'makanan', description: 'Tahu pong dibalik dan digoreng krispi dengan isian aci berbumbu lezat.', image: 'https://images.unsplash.com/photo-1598514982205-f36b96d1e8d4?auto=format&fit=crop&w=600&q=80' },
+                { id: 'th3', name: 'Tahu Gejrot', price: 12000, category: 'tahu', mainTab: 'makanan', description: 'Potongan tahu pong disiram kuah asam pedas manis segar beraroma bawang.', image: 'https://images.unsplash.com/photo-1626200419143-f28427e1f13b?auto=format&fit=crop&w=600&q=80' },
+                { id: 'tb1', name: 'Nasi Putih', price: 5000, category: 'tambahan', mainTab: 'makanan', description: 'Porsi nasi putih pulen hangat untuk teman makan besar.', image: 'https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&w=600&q=80' },
+                { id: 'tb2', name: 'Telur Mata Sapi', price: 5000, category: 'tambahan', mainTab: 'makanan', description: 'Telur ceplok segar yang dimasak sempurna sebagai pelengkap hidangan.', image: 'https://images.unsplash.com/photo-1525424733699-2789139150bc?auto=format&fit=crop&w=600&q=80' }
+            ]
+        };
+    </script>
+
+    <!-- WRAPPER UTAMA -->
+    <div class="max-w-md mx-auto w-full min-h-screen bg-white flex flex-col relative z-10 shadow-[0_10px_40px_rgba(11,79,108,0.08)] sm:my-4 sm:rounded-3xl border-x sm:border border-slate-200/90 pb-28">
+        
+        <!-- HEADER KESELURUHAN (Brand, Tab Minuman/Makanan, Sub-Kategori) -->
+        <header class="sticky top-0 z-20 bg-white/95 backdrop-blur-md border-b border-slate-200/70 sm:rounded-t-3xl transition-all shadow-sm">
+            <!-- Brand & Meja -->
+            <div class="flex items-center justify-between px-5 pt-4 pb-1">
+                <div>
+                    <div class="flex items-baseline gap-1.5">
+                        <h1 id="store-title" class="text-3xl font-heading font-extrabold text-captain-cyan brand-title-shadow leading-none">Captain</h1>
+                        <span id="store-sub" class="text-xs font-heading font-bold text-captain-navy tracking-wide">coffee x chill</span>
+                    </div>
+                    <span id="store-tagline" class="inline-block text-[10px] font-mono font-bold tracking-wider text-white bg-captain-cyan px-2.5 py-0.5 rounded-full uppercase shadow-xs mt-1">Freshly Brewed Everyday</span>
+                </div>
+                <div class="flex items-center gap-1.5 bg-white border border-slate-200 shadow-xs rounded-full px-3.5 py-1.5 hover:border-captain-cyan transition-colors">
+                    <span class="w-2 h-2 rounded-full bg-captain-pink"></span>
+                    <i class="fa-solid fa-chair text-captain-cyan text-xs"></i>
+                    <select id="table-selector" class="bg-transparent text-xs font-mono font-bold text-captain-navy focus:outline-none cursor-pointer"></select>
+                </div>
+            </div>
+            
+            <!-- Pencarian Cepat -->
+            <div class="px-5 pt-2 pb-2">
+                <div class="relative">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                    <input type="text" id="search-input" placeholder="Cari minuman atau makanan..." class="w-full stitch-input text-slate-800 placeholder-slate-400 text-xs font-medium rounded-xl pl-9 pr-4 py-2">
+                </div>
+            </div>
+
+            <!-- LEVEL 1: TAB UTAMA (Minuman vs Makanan) -->
+            <div class="flex px-5 pt-1 border-b border-slate-100">
+                <button onclick="switchMainTab('minuman')" id="tab-minuman" class="flex-1 pb-2 text-center font-heading font-bold text-sm border-b-2 transition-colors border-captain-cyan text-captain-cyan">
+                    <i class="fa-solid fa-glass-water me-1.5 text-[11px]"></i> Minuman
+                </button>
+                <button onclick="switchMainTab('makanan')" id="tab-makanan" class="flex-1 pb-2 text-center font-heading font-bold text-sm border-b-2 transition-colors border-transparent text-slate-400 hover:text-slate-600">
+                    <i class="fa-solid fa-utensils me-1.5 text-[11px]"></i> Makanan
+                </button>
+            </div>
+
+            <!-- LEVEL 2: PIL KATEGORI DINAMIS -->
+            <div class="bg-slate-50/95 py-2.5 px-5 overflow-x-auto no-scrollbar">
+                <div id="category-container" class="flex gap-2 w-max py-0.5">
+                    <!-- Dynamic Category Buttons populated via JS -->
+                </div>
+            </div>
+        </header>
+
+        <!-- MENU CONTENT / PRODUCTS GRID -->
+        <main class="p-5 flex-1 bg-slate-50/40">
+            <div class="flex items-center justify-between mb-3.5">
+                <h2 id="current-category-title" class="font-heading text-lg font-extrabold text-slate-800 tracking-tight">Semua Menu</h2>
+                <span id="menu-count-badge" class="text-[11px] font-mono font-semibold text-captain-navy bg-captain-cyanLight border border-captain-cyan/30 px-3 py-0.5 rounded-full"></span>
+            </div>
+            
+            <!-- Grid akan diisi bersih via JS -->
+            <div id="menu-grid" class="grid grid-cols-1 gap-3"></div>
+            
+            <div id="empty-state" class="hidden py-12 text-center stitch-card rounded-2xl p-6 my-4">
+                <i class="fa-solid fa-mug-saucer text-4xl text-slate-300 mb-3"></i>
+                <p class="text-slate-700 text-sm font-bold font-heading">Menu yang Anda cari tidak ditemukan.</p>
+                <button onclick="resetSearch()" class="mt-3 text-xs font-bold text-captain-cyan underline hover:text-captain-cyanDark">Reset Pencarian</button>
+            </div>
+        </main>
+    </div>
+
+    <!-- FLOATING CART SUMMARY BUTTON -->
+    <div id="floating-cart-bar" class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md p-4 bg-gradient-to-t from-white via-white/95 to-transparent z-40 transition-transform duration-300 translate-y-full pointer-events-none">
+        <button onclick="openCartModal()" class="pointer-events-auto w-full captain-gradient hover:opacity-95 active:scale-[0.99] text-white py-3.5 px-5 rounded-2xl flex items-center justify-between transition-all shadow-xl">
+            <div class="flex items-center gap-3">
+                <div class="relative bg-white/20 backdrop-blur-xs w-10 h-10 rounded-xl flex items-center justify-center border border-white/40">
+                    <i class="fa-solid fa-bag-shopping text-sm text-white"></i>
+                    <span id="cart-badge-count" class="absolute -top-1.5 -right-1.5 bg-captain-pink text-white font-mono text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-white shadow-xs">0</span>
+                </div>
+                <div class="text-left">
+                    <p id="cart-item-summary" class="text-[11px] text-white/90 font-medium">0 Pesanan</p>
+                    <p id="cart-total-price" class="text-base font-bold font-mono text-white tracking-tight">Rp 0</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2 text-xs font-heading font-bold uppercase tracking-wider bg-white text-captain-cyan px-3.5 py-2 rounded-xl shadow-xs">
+                <span class="">Lihat Pesanan</span>
+                <i class="fa-solid fa-arrow-right text-[10px]"></i>
+            </div>
+        </button>
+    </div>
+
+    <!-- MODAL 1: ITEM DETAIL & CUSTOMIZATION -->
+    <div id="item-modal" onclick="if(event.target === this) closeItemModal()" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-200">
+        <div class="bg-white w-full max-w-md rounded-3xl max-h-[85vh] flex flex-col overflow-hidden border border-slate-200 shadow-2xl transform scale-95 transition-transform duration-200">
+            <div class="relative h-44 bg-slate-100 overflow-hidden border-b border-slate-100 flex-shrink-0">
+                <img id="modal-img" src="" alt="Product" class="w-full h-full object-cover">
+                <button onclick="closeItemModal()" class="absolute top-3 right-3 bg-white/90 backdrop-blur-md text-slate-700 hover:text-captain-pink w-9 h-9 rounded-full flex items-center justify-center border border-slate-200 shadow-sm transition-colors">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+                <span id="modal-badge" class="absolute bottom-3 left-3 bg-captain-pink text-white text-[10px] font-mono uppercase font-bold px-3 py-1 rounded-full shadow-sm hidden"></span>
+            </div>
+            <div class="p-5 overflow-y-auto flex-1 space-y-4">
+                <div>
+                    <div class="flex justify-between items-start gap-3">
+                        <h3 id="modal-title" class="text-xl font-heading font-extrabold text-slate-800 leading-snug">Nama Menu</h3>
+                        <span id="modal-price" class="text-lg font-bold font-mono text-captain-cyan whitespace-nowrap">Rp 0</span>
+                    </div>
+                    <p id="modal-desc" class="text-xs text-slate-500 mt-1 leading-relaxed"></p>
+                </div>
+                <div id="modal-options-container" class="space-y-3.5 pt-3 border-t border-slate-100 hidden"></div>
+                <div class="pt-3 border-t border-slate-100">
+                    <label for="modal-note" class="block text-[11px] font-heading font-bold text-captain-navy uppercase tracking-wider mb-1.5">
+                        <i class="fa-regular fa-pen-to-square text-captain-cyan me-1"></i> Catatan Pesanan (Opsional)
+                    </label>
+                    <textarea id="modal-note" rows="2" placeholder="Tulis catatan khusus di sini (contoh: es dipisah, gula sedikit, dll.)..." class="w-full stitch-input text-slate-800 placeholder-slate-400 text-xs rounded-xl p-3 resize-none"></textarea>
+                </div>
+                <div class="flex items-center justify-between pt-3 border-t border-slate-100">
+                    <span class="text-[11px] font-heading font-bold text-captain-navy uppercase tracking-wider">Jumlah Pesanan</span>
+                    <div class="flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-xl p-1">
+                        <button onclick="changeModalQty(-1)" class="w-8 h-8 rounded-lg bg-white text-slate-700 border border-slate-200 hover:border-captain-cyan active:scale-95 flex items-center justify-center transition-all shadow-2xs">
+                            <i class="fa-solid fa-minus text-xs"></i>
+                        </button>
+                        <span id="modal-qty" class="w-6 text-center font-mono font-bold text-sm text-slate-800">1</span>
+                        <button onclick="changeModalQty(1)" class="w-8 h-8 rounded-lg bg-captain-cyan text-white hover:bg-captain-cyanDark active:scale-95 flex items-center justify-center transition-all shadow-2xs">
+                            <i class="fa-solid fa-plus text-xs"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="p-4 bg-slate-50 border-t border-slate-200/80 flex-shrink-0">
+                <button onclick="confirmAddToCart()" class="w-full captain-gradient hover:opacity-95 active:scale-[0.99] text-white font-heading font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 transition-all text-sm">
+                    <i class="fa-solid fa-cart-plus"></i>
+                    <span id="modal-add-btn-text" class="font-mono text-xs font-bold">Tambah ke Pesanan</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: CART REVIEW & CHECKOUT -->
+    <div id="cart-modal" onclick="if(event.target === this) closeCartModal()" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-200">
+        <div class="bg-white w-full max-w-md rounded-3xl max-h-[85vh] flex flex-col overflow-hidden border border-slate-200 shadow-2xl transform scale-95 transition-transform duration-200">
+            <div class="p-4 bg-white border-b border-slate-100 flex items-center justify-between flex-shrink-0">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-xl bg-captain-cyanLight text-captain-cyan flex items-center justify-center border border-captain-cyan/20">
+                        <i class="fa-solid fa-receipt text-sm"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-heading font-extrabold text-lg text-slate-800 leading-none">Ringkasan Pesanan</h3>
+                        <span class="text-[10px] text-slate-400">Verifikasi pesanan sebelum dikirim ke kasir</span>
+                    </div>
+                </div>
+                <button onclick="closeCartModal()" class="bg-slate-50 text-slate-500 hover:text-captain-pink w-8 h-8 rounded-full flex items-center justify-center border border-slate-200 transition-colors">
+                    <i class="fa-solid fa-xmark text-sm"></i>
+                </button>
+            </div>
+            <div class="p-4 overflow-y-auto flex-1 space-y-4 bg-slate-50/50">
+                <div class="stitch-card p-3.5 rounded-2xl space-y-3">
+                    <div class="flex items-center justify-between text-xs border-b border-slate-100 pb-2">
+                        <span class="text-[11px] font-heading font-bold uppercase tracking-wider text-captain-navy">Lokasi Pesanan</span>
+                        <span id="cart-table-badge" class="font-mono text-xs font-bold text-captain-pink bg-captain-pinkLight border border-captain-pink/20 px-3 py-0.5 rounded-full">Meja --</span>
+                    </div>
+                    <div>
+                        <label for="customer-name" class="block text-[11px] font-heading font-bold uppercase tracking-wider text-captain-navy mb-1">
+                            Nama Pemesan <span class="text-captain-pink">*</span>
+                        </label>
+                        <input type="text" id="customer-name" placeholder="Masukkan nama Anda..." class="w-full stitch-input text-slate-800 placeholder-slate-400 text-xs font-medium rounded-xl p-2.5">
+                    </div>
+                </div>
+                <div class="space-y-2">
+                    <h4 class="text-[11px] font-heading font-bold text-captain-navy uppercase tracking-wider px-1">Rincian Menu Dipilih</h4>
+                    <div id="cart-items-list" class="space-y-2.5"></div>
+                </div>
+                <div class="bg-captain-cyanLight/70 p-3 rounded-2xl border border-captain-cyan/20 flex gap-2.5 items-start">
+                    <i class="fa-solid fa-circle-info text-captain-cyan text-xs mt-0.5"></i>
+                    <p class="text-[11px] text-captain-navy leading-relaxed">
+                        Setelah menekan tombol kirim, rincian pesanan akan diteruskan ke WhatsApp Kasir. Silakan lakukan konfirmasi &amp; pembayaran di kasir.
+                    </p>
+                </div>
+            </div>
+            <div class="p-4 bg-white border-t border-slate-200 space-y-2.5 flex-shrink-0">
+                <div class="captain-gradient px-4 py-2.5 rounded-xl flex justify-between items-center text-white">
+                    <span class="font-heading font-bold text-sm">Total Pembayaran</span>
+                    <span id="cart-final-total" class="text-lg font-bold font-mono">Rp 0</span>
+                </div>
+                <button onclick="sendOrderToWhatsApp()" class="w-full bg-slate-900 hover:bg-slate-800 active:scale-[0.99] text-white font-heading font-bold py-3 rounded-xl shadow-md flex items-center justify-center gap-2 transition-all text-sm">
+                    <i class="fa-brands fa-whatsapp text-lg text-emerald-400"></i>
+                    <span class="">Kirim Pesanan ke WhatsApp</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST -->
+    <div id="toast" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-white text-slate-800 text-xs font-semibold px-4 py-2.5 rounded-full border border-slate-200 shadow-lg flex items-center gap-2 transition-all duration-300 opacity-0 -translate-y-5 pointer-events-none">
+        <span class="w-2 h-2 rounded-full bg-captain-pink"></span>
+        <span id="toast-msg" class="font-mono text-[11px] text-captain-navy font-bold">Pesanan berhasil ditambahkan!</span>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        let activeMainTab = 'minuman';
+        let activeCategory = 'all-minuman';
+        let searchQuery = '';
+        let currentTable = APP_CONFIG.defaultTable;
+        let cart = [];
+        let toastTimeout = null;
+        let selectedItem = null;
+        let modalQty = 1;
+        let selectedOptions = {};
+
+        window.addEventListener('DOMContentLoaded', () => {
+            initApp();
+        });
+
+        function initApp() {
+            document.getElementById('store-title').textContent = APP_CONFIG.storeName;
+            document.getElementById('store-sub').textContent = APP_CONFIG.storeSub;
+            document.getElementById('store-tagline').textContent = APP_CONFIG.tagline;
+            
+            detectTableFromURL();
+            setupTableSelector();
+            renderCategories();
+            renderMenuGrid();
+            
+            document.getElementById('search-input').addEventListener('input', (e) => {
+                searchQuery = e.target.value.toLowerCase().trim();
+                renderMenuGrid();
+            });
+        }
+
+        // LEVEL 1 TAB SWITCHING LOGIC
+        function switchMainTab(tabName) {
+            activeMainTab = tabName;
+            activeCategory = tabName === 'minuman' ? 'all-minuman' : 'all-makanan';
+            searchQuery = '';
+            document.getElementById('search-input').value = '';
+
+            const btnMinuman = document.getElementById('tab-minuman');
+            const btnMakanan = document.getElementById('tab-makanan');
+
+            if(tabName === 'minuman') {
+                btnMinuman.className = "flex-1 pb-2 text-center font-heading font-bold text-sm border-b-2 transition-colors border-captain-cyan text-captain-cyan";
+                btnMakanan.className = "flex-1 pb-2 text-center font-heading font-bold text-sm border-b-2 transition-colors border-transparent text-slate-400 hover:text-slate-600";
+            } else {
+                btnMakanan.className = "flex-1 pb-2 text-center font-heading font-bold text-sm border-b-2 transition-colors border-captain-cyan text-captain-cyan";
+                btnMinuman.className = "flex-1 pb-2 text-center font-heading font-bold text-sm border-b-2 transition-colors border-transparent text-slate-400 hover:text-slate-600";
+            }
+
+            renderCategories();
+            renderMenuGrid();
+        }
+
+        function detectTableFromURL() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const tableParam = urlParams.get('table') || urlParams.get('meja');
+            if (tableParam) {
+                const parsedNum = parseInt(tableParam, 10);
+                if (!isNaN(parsedNum) && parsedNum >= 1 && parsedNum <= APP_CONFIG.totalTables) {
+                    currentTable = String(parsedNum).padStart(2, '0');
+                }
+            }
+        }
+
+        function setupTableSelector() {
+            const selector = document.getElementById('table-selector');
+            selector.innerHTML = '';
+            for (let i = 1; i <= APP_CONFIG.totalTables; i++) {
+                const numStr = String(i).padStart(2, '0');
+                const option = document.createElement('option');
+                option.value = numStr;
+                option.textContent = `Meja ${numStr}`;
+                if (numStr === currentTable) option.selected = true;
+                selector.appendChild(option);
+            }
+            selector.addEventListener('change', (e) => {
+                currentTable = e.target.value;
+                updateCartBadge();
+                showToast(`Lokasi diubah: Meja ${currentTable}`);
+            });
+        }
+
+        function formatRupiah(amount) {
+            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(amount).replace('Rp', 'Rp ');
+        }
+
+        function extractExtraPrice(optionValue) {
+            if (!optionValue) return 0;
+            const match = String(optionValue).match(/\+\s*(\d+)/);
+            return match ? parseInt(match[1], 10) : 0;
+        }
+
+        function calculateCurrentUnitPrice() {
+            if (!selectedItem) return 0;
+            let extra = 0;
+            for (const val of Object.values(selectedOptions)) {
+                extra += extractExtraPrice(val);
+            }
+            return selectedItem.price + extra;
+        }
+
+        function toggleBodyScroll(lock) {
+            if (lock) document.body.classList.add('overflow-hidden');
+            else document.body.classList.remove('overflow-hidden');
+        }
+
+        function renderCategories() {
+            const container = document.getElementById('category-container');
+            const categoriesToRender = APP_CONFIG.categories[activeMainTab];
+
+            container.innerHTML = categoriesToRender.map(cat => {
+                const isActive = cat.id === activeCategory;
+                return `
+                    <button onclick="selectCategory('${cat.id}')" 
+                        class="whitespace-nowrap px-3.5 py-1.5 rounded-full text-xs font-heading font-bold flex items-center gap-2 transition-all tap-highlight-transparent ${
+                            isActive 
+                            ? 'bg-captain-cyan text-white shadow-sm shadow-captain-cyan/30' 
+                            : 'bg-white text-captain-navy hover:border-captain-cyan border border-slate-200'
+                        }">
+                        <i class="fa-solid ${cat.icon} text-[11px] ${isActive ? 'text-white' : 'text-captain-cyan'}"></i>
+                        <span>${cat.name}</span>
+                    </button>
+                `;
+            }).join('');
+        }
+
+        function selectCategory(catId) {
+            activeCategory = catId;
+            renderCategories();
+            
+            const catObj = APP_CONFIG.categories[activeMainTab].find(c => c.id === catId);
+            document.getElementById('current-category-title').textContent = catObj ? catObj.name : 'Daftar Menu';
+            
+            renderMenuGrid();
+        }
+
+        function renderMenuGrid() {
+            const grid = document.getElementById('menu-grid');
+            const emptyState = document.getElementById('empty-state');
+            
+            const filtered = APP_CONFIG.menuItems.filter(item => {
+                const matchesMainTab = item.mainTab === activeMainTab;
+                const matchesCategory = activeCategory.startsWith('all-') || item.category === activeCategory;
+                const matchesSearch = item.name.toLowerCase().includes(searchQuery) || item.description.toLowerCase().includes(searchQuery);
+                return matchesMainTab && matchesCategory && matchesSearch;
+            });
+
+            document.getElementById('menu-count-badge').textContent = `Tersedia: ${filtered.length} Menu`;
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            } else {
+                emptyState.classList.add('hidden');
+            }
+
+            grid.innerHTML = filtered.map(item => {
+                const isBestSeller = item.badge && item.badge.toLowerCase().includes('best');
+                const badgeClass = isBestSeller ? 'bg-captain-pink text-white' : 'bg-captain-cyan text-white';
+                return `
+                <div onclick="openItemModal('${item.id}')" class="stitch-card rounded-2xl p-3 flex gap-3.5 items-center hover:border-captain-cyan/50 active:scale-[0.99] transition-all cursor-pointer">
+                    <div class="relative w-24 h-24 rounded-xl overflow-hidden bg-slate-100 flex-shrink-0 border border-slate-100">
+                        <img src="${item.image}" alt="${item.name}" loading="lazy" class="w-full h-full object-cover">
+                        ${item.badge ? `<span class="absolute top-1.5 left-1.5 ${badgeClass} text-[9px] font-mono font-bold uppercase px-2 py-0.5 rounded-full shadow-xs">${item.badge}</span>` : ''}
+                    </div>
+                    <div class="flex-1 min-w-0 flex flex-col justify-between h-full py-0.5">
+                        <div>
+                            <h3 class="font-heading font-bold text-base text-slate-800 truncate leading-snug">${item.name}</h3>
+                            <p class="text-[11px] text-slate-500 line-clamp-2 mt-0.5 leading-relaxed">${item.description}</p>
+                        </div>
+                        <div class="flex justify-between items-center mt-2.5">
+                            <span class="font-mono font-bold text-sm text-captain-cyan">${formatRupiah(item.price)}</span>
+                            <button class="bg-captain-cyanLight hover:bg-captain-cyan text-captain-cyan hover:text-white w-7 h-7 rounded-lg border border-captain-cyan/20 flex items-center justify-center transition-colors">
+                                <i class="fa-solid fa-plus text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `}).join('');
+        }
+
+        function resetSearch() {
+            searchQuery = '';
+            document.getElementById('search-input').value = '';
+            selectCategory(activeMainTab === 'minuman' ? 'all-minuman' : 'all-makanan');
+        }
+
+        function openItemModal(itemId) {
+            selectedItem = APP_CONFIG.menuItems.find(i => i.id === itemId);
+            if (!selectedItem) return;
+            modalQty = 1;
+            selectedOptions = {};
+            
+            document.getElementById('modal-img').src = selectedItem.image;
+            document.getElementById('modal-title').textContent = selectedItem.name;
+            document.getElementById('modal-desc').textContent = selectedItem.description;
+            document.getElementById('modal-qty').textContent = modalQty;
+            document.getElementById('modal-note').value = '';
+            
+            const badgeEl = document.getElementById('modal-badge');
+            if (selectedItem.badge) {
+                badgeEl.textContent = selectedItem.badge;
+                badgeEl.classList.remove('hidden');
+            } else {
+                badgeEl.classList.add('hidden');
+            }
+            
+            renderModalOptions();
+            updateModalPriceAndButton();
+            
+            const modal = document.getElementById('item-modal');
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+            modal.children[0].classList.remove('scale-95');
+            modal.children[0].classList.add('scale-100');
+            toggleBodyScroll(true);
+        }
+
+        function renderModalOptions() {
+            const container = document.getElementById('modal-options-container');
+            container.innerHTML = '';
+            if (!selectedItem.options || Object.keys(selectedItem.options).length === 0) {
+                container.classList.add('hidden');
+                return;
+            }
+            container.classList.remove('hidden');
+            
+            const optionLabels = {
+                serv: 'Penyajian (Serving)',
+                beans: 'Pilihan Biji Kopi',
+                pedas: 'Tingkat Kepedasan',
+                sugar: 'Tingkat Kemanisan',
+                ice: 'Takaran Es'
+            };
+            for (const [key, values] of Object.entries(selectedItem.options)) {
+                if (!values || values.length === 0) continue;
+                selectedOptions[key] = values[0];
+                const labelText = optionLabels[key.toLowerCase()] || key;
+                const group = document.createElement('div');
+                group.className = 'space-y-1.5';
+                group.innerHTML = `
+                    <label class="block text-[11px] font-heading font-bold text-captain-navy uppercase tracking-wider">${labelText}</label>
+                    <div class="grid grid-cols-${values.length > 2 ? '3' : '2'} gap-2">
+                        ${values.map(val => `
+                            <button type="button" onclick="selectOption('${key}', '${val}', this)" 
+                                class="option-btn-${key} text-xs py-2 px-2.5 rounded-xl transition-all font-mono ${
+                                    val === selectedOptions[key]
+                                    ? 'bg-captain-cyan text-white font-bold shadow-xs'
+                                    : 'bg-slate-50 border border-slate-200 text-slate-600 font-medium hover:border-captain-cyan'
+                                }">
+                                ${val}
+                            </button>
+                        `).join('')}
+                    </div>
+                `;
+                container.appendChild(group);
+            }
+        }
+
+        function selectOption(groupKey, value, btnEl) {
+            selectedOptions[groupKey] = value;
+            const buttons = document.querySelectorAll(`.option-btn-${groupKey}`);
+            buttons.forEach(b => {
+                b.className = `option-btn-${groupKey} text-xs py-2 px-2.5 rounded-xl transition-all font-mono bg-slate-50 border border-slate-200 text-slate-600 font-medium hover:border-captain-cyan`;
+            });
+            btnEl.className = `option-btn-${groupKey} text-xs py-2 px-2.5 rounded-xl transition-all font-mono bg-captain-cyan text-white font-bold shadow-xs`;
+            updateModalPriceAndButton();
+        }
+
+        function changeModalQty(delta) {
+            if (modalQty + delta >= 1) {
+                modalQty += delta;
+                document.getElementById('modal-qty').textContent = modalQty;
+                updateModalPriceAndButton();
+            }
+        }
+
+        function updateModalPriceAndButton() {
+            if (!selectedItem) return;
+            const unitPrice = calculateCurrentUnitPrice();
+            const total = unitPrice * modalQty;
+            document.getElementById('modal-price').textContent = formatRupiah(unitPrice);
+            document.getElementById('modal-add-btn-text').textContent = `Tambah ke Pesanan - ${formatRupiah(total)}`;
+        }
+
+        function closeItemModal() {
+            const modal = document.getElementById('item-modal');
+            modal.children[0].classList.remove('scale-100');
+            modal.children[0].classList.add('scale-95');
+            modal.classList.add('opacity-0', 'pointer-events-none');
+            toggleBodyScroll(false);
+        }
+
+        function confirmAddToCart() {
+            if (!selectedItem) return;
+            const note = document.getElementById('modal-note').value.trim();
+            const optionString = Object.values(selectedOptions).join(', ');
+            const finalUnitPrice = calculateCurrentUnitPrice();
+            const existingIndex = cart.findIndex(c => c.id === selectedItem.id && c.options === optionString && c.note === note);
+            if (existingIndex > -1) {
+                cart[existingIndex].qty += modalQty;
+            } else {
+                cart.push({
+                    cartItemId: Date.now() + Math.random().toString(),
+                    id: selectedItem.id,
+                    name: selectedItem.name,
+                    price: finalUnitPrice,
+                    qty: modalQty,
+                    options: optionString,
+                    note: note
+                });
+            }
+            closeItemModal();
+            updateCartBadge();
+            showToast(`${selectedItem.name} ditambahkan!`);
+        }
+
+        function updateCartBadge() {
+            const floatingBar = document.getElementById('floating-cart-bar');
+            const totalItems = cart.reduce((sum, item) => sum + item.qty, 0);
+            const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+            if (totalItems > 0) {
+                document.getElementById('cart-badge-count').textContent = totalItems;
+                document.getElementById('cart-item-summary').textContent = `${totalItems} Item • Meja ${currentTable}`;
+                document.getElementById('cart-total-price').textContent = formatRupiah(totalPrice);
+                floatingBar.classList.remove('translate-y-full');
+            } else {
+                floatingBar.classList.add('translate-y-full');
+            }
+        }
+
+        function openCartModal() {
+            if (cart.length === 0) return;
+            document.getElementById('cart-table-badge').textContent = `Meja ${currentTable}`;
+            renderCartList();
+            const modal = document.getElementById('cart-modal');
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+            modal.children[0].classList.remove('scale-95');
+            modal.children[0].classList.add('scale-100');
+            toggleBodyScroll(true);
+        }
+
+        function closeCartModal() {
+            const modal = document.getElementById('cart-modal');
+            modal.children[0].classList.remove('scale-100');
+            modal.children[0].classList.add('scale-95');
+            modal.classList.add('opacity-0', 'pointer-events-none');
+            toggleBodyScroll(false);
+        }
+
+        function renderCartList() {
+            const container = document.getElementById('cart-items-list');
+            const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+            document.getElementById('cart-final-total').textContent = formatRupiah(totalPrice);
+            container.innerHTML = cart.map(item => `
+                <div class="stitch-card p-3.5 rounded-2xl flex justify-between items-start gap-3">
+                    <div class="flex-1 min-w-0">
+                        <h5 class="font-heading font-bold text-sm text-slate-800">${item.name}</h5>
+                        ${item.options ? `<p class="text-[11px] font-mono text-captain-cyan font-semibold mt-0.5">${item.options}</p>` : ''}
+                        ${item.note ? `<p class="text-[11px] text-slate-500 bg-slate-50 border border-slate-200/80 rounded-lg px-2.5 py-1 mt-1.5"><i class="fa-regular fa-note-sticky text-[10px] text-captain-pink me-1"></i>${item.note}</p>` : ''}
+                        <p class="text-xs font-mono font-bold text-captain-pink mt-1.5">${formatRupiah(item.price * item.qty)}</p>
+                    </div>
+                    <div class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl p-1">
+                        <button onclick="updateCartItemQty('${item.cartItemId}', -1)" class="w-6 h-6 rounded-lg bg-white text-slate-600 border border-slate-200 hover:border-captain-pink flex items-center justify-center">
+                            <i class="fa-solid fa-minus text-[10px]"></i>
+                        </button>
+                        <span class="w-4 text-center font-mono font-bold text-xs text-slate-800">${item.qty}</span>
+                        <button onclick="updateCartItemQty('${item.cartItemId}', 1)" class="w-6 h-6 rounded-lg bg-captain-cyan text-white hover:bg-captain-cyanDark flex items-center justify-center">
+                            <i class="fa-solid fa-plus text-[10px]"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateCartItemQty(cartItemId, delta) {
+            const index = cart.findIndex(item => item.cartItemId === cartItemId);
+            if (index > -1) {
+                cart[index].qty += delta;
+                if (cart[index].qty <= 0) cart.splice(index, 1);
+            }
+            updateCartBadge();
+            if (cart.length === 0) closeCartModal();
+            else renderCartList();
+        }
+
+        function sendOrderToWhatsApp() {
+            const customerName = document.getElementById('customer-name').value.trim();
+            if (!customerName) {
+                showToast("Silakan isi nama Anda sebelum memesan!");
+                document.getElementById('customer-name').focus();
+                return;
+            }
+            if (cart.length === 0) return;
+            let message = `*[PESANAN BARU - MEJA ${currentTable}]*\nNama Pemesan: ${customerName}\n\n*Detail Pesanan:*\n`;
+            let totalPrice = 0;
+            cart.forEach((item, idx) => {
+                const subtotal = item.price * item.qty;
+                totalPrice += subtotal;
+                const optText = item.options ? ` (${item.options})` : '';
+                message += `${idx + 1}. ${item.qty}x *${item.name}*${optText} - ${formatRupiah(subtotal)}\n`;
+                if (item.note) message += `   └ Catatan: _${item.note}_\n`;
+            });
+            message += `\n*Total Pembayaran:* *${formatRupiah(totalPrice)}*\n\nMohon konfirmasi pesanan ini di kasir. Terima kasih!`;
+            window.open(`https://wa.me/${APP_CONFIG.whatsappNumber}?text=${encodeURIComponent(message)}`, '_blank');
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-msg').textContent = message;
+            if (toastTimeout) clearTimeout(toastTimeout);
+            toast.classList.remove('opacity-0', '-translate-y-5', 'pointer-events-none');
+            toastTimeout = setTimeout(() => { toast.classList.add('opacity-0', '-translate-y-5', 'pointer-events-none'); }, 2800);
+        }
+    </script>
+</body>
+</html>
