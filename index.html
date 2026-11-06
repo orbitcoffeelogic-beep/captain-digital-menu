@@ -89,7 +89,8 @@
             whatsappNumber: "628983610492", 
             totalTables: 11,
             defaultTable: "01",
-            
+            // Masukkan URL Deployment Google Apps Script Anda di baris ini:
+            menuApiUrl: "https://script.google.com/macros/s/AKfycbzLa2QzC2FMgCYWOeroreDWTaXFY8UR9dTikqaohMEFKD8KZMfjiFhNy_ywnxZaV_A6/exec",
             // Konfigurasi 2 Level Tab
             categories: {
                 minuman: [
@@ -190,6 +191,13 @@
         
         <!-- HEADER KESELURUHAN (Brand, Tab Minuman/Makanan, Sub-Kategori) -->
         <header class="sticky top-0 z-20 bg-white/95 backdrop-blur-md border-b border-slate-200/70 sm:rounded-t-3xl transition-all shadow-sm">
+        <!-- BANNER STATUS TOKO & PENGUMUMAN DINAMIS -->
+        <div id="store-closed-banner" class="hidden bg-rose-500 text-white text-center py-2 px-4 text-xs font-heading font-bold shadow-inner">
+            <i class="fa-solid fa-clock text-xs me-1.5"></i> Kedai Saat Ini Sedang Tutup / Istirahat
+        </div>
+        <div id="store-announcement-bar" class="hidden bg-captain-navy text-white text-[11px] font-mono py-1 px-4 text-center overflow-hidden truncate">
+            <span id="announcement-text"></span>
+        </div>
             <!-- Brand & Meja -->
             <div class="flex items-center justify-between px-5 pt-4 pb-1">
                 <div>
@@ -346,6 +354,20 @@
                         </label>
                         <input type="text" id="customer-name" placeholder="Masukkan nama Anda..." class="w-full stitch-input text-slate-800 placeholder-slate-400 text-xs font-medium rounded-xl p-2.5">
                     </div>
+                    <!-- PILIHAN METODE BAYAR -->
+                    <div class="pt-2 border-t border-slate-100">
+                        <label class="block text-[11px] font-heading font-bold uppercase tracking-wider text-captain-navy mb-1.5">
+                            Metode Pembayaran di Kasir
+                        </label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button type="button" onclick="selectPaymentMethod('Tunai')" id="pay-btn-tunai" class="py-2 px-3 text-xs font-mono font-bold rounded-xl border border-captain-cyan bg-captain-cyan text-white shadow-xs transition-all flex items-center justify-center gap-1.5">
+                                <i class="fa-solid fa-money-bill-wave"></i> Tunai
+                            </button>
+                            <button type="button" onclick="selectPaymentMethod('QRIS')" id="pay-btn-qris" class="py-2 px-3 text-xs font-mono font-bold rounded-xl border border-slate-200 bg-slate-50 text-slate-600 hover:border-captain-cyan transition-all flex items-center justify-center gap-1.5">
+                                <i class="fa-solid fa-qrcode"></i> QRIS
+                            </button>
+                        </div>
+                    </div>
                 </div>
                 <div class="space-y-2">
                     <h4 class="text-[11px] font-heading font-bold text-captain-navy uppercase tracking-wider px-1">Rincian Menu Dipilih</h4>
@@ -393,11 +415,48 @@
             initApp();
         });
 
-        function initApp() {
-            document.getElementById('store-title').textContent = APP_CONFIG.storeName;
+        async function initApp() {
+document.getElementById('store-title').textContent = APP_CONFIG.storeName;
             document.getElementById('store-sub').textContent = APP_CONFIG.storeSub;
             document.getElementById('store-tagline').textContent = APP_CONFIG.tagline;
-            
+
+            // Animasi memuat awal
+            document.getElementById('menu-grid').innerHTML = `
+                <div class="py-12 text-center text-slate-400">
+                    <i class="fa-solid fa-spinner fa-spin text-2xl text-captain-cyan mb-2"></i>
+                    <p class="text-xs font-mono font-medium">Sinkronisasi menu & status kedai...</p>
+                </div>
+            `;
+
+            // Sinkronisasi data dari Google Sheets
+            if (APP_CONFIG.menuApiUrl && APP_CONFIG.menuApiUrl.startsWith('http')) {
+                try {
+                    const response = await fetch(APP_CONFIG.menuApiUrl);
+                    if (response.ok) {
+                        const payload = await response.json();
+                        
+                        // Handle struktur baru (payload.settings & payload.menu)
+                        if (payload.settings) {
+                            if (payload.settings.is_open !== undefined) APP_CONFIG.isOpen = payload.settings.is_open;
+                            if (payload.settings.whatsapp_number) APP_CONFIG.whatsappNumber = payload.settings.whatsapp_number;
+                            if (payload.settings.total_tables) APP_CONFIG.totalTables = payload.settings.total_tables;
+                            if (payload.settings.announcement !== undefined) APP_CONFIG.announcement = payload.settings.announcement;
+                        }
+
+                        // Isi daftar menu
+                        const items = Array.isArray(payload) ? payload : (payload.menu || []);
+                        if (items.length > 0) {
+                            APP_CONFIG.menuItems = items;
+                        }
+                    }
+                } catch (err) {
+                    console.warn("Gagal sinkronisasi data Sheets, memakai data lokal.", err);
+                }
+            }
+
+            // Terapkan pengaturan status toko & pengumuman
+            applyStoreSettings();
+
             detectTableFromURL();
             setupTableSelector();
             renderCategories();
@@ -407,6 +466,27 @@
                 searchQuery = e.target.value.toLowerCase().trim();
                 renderMenuGrid();
             });
+        }
+
+        function applyStoreSettings() {
+            const closedBanner = document.getElementById('store-closed-banner');
+            const announceBar = document.getElementById('store-announcement-bar');
+            const announceText = document.getElementById('announcement-text');
+
+            // 1. Cek status buka/tutup toko
+            if (APP_CONFIG.isOpen === false) {
+                closedBanner.classList.remove('hidden');
+            } else {
+                closedBanner.classList.add('hidden');
+            }
+
+            // 2. Cek banner pengumuman
+            if (APP_CONFIG.announcement && APP_CONFIG.announcement.trim() !== '') {
+                announceText.textContent = APP_CONFIG.announcement;
+                announceBar.classList.remove('hidden');
+            } else {
+                announceBar.classList.add('hidden');
+            }
         }
 
         // LEVEL 1 TAB SWITCHING LOGIC
@@ -536,28 +616,44 @@
             }
 
             grid.innerHTML = filtered.map(item => {
+                const isSoldOut = item.is_available === false;
                 const isBestSeller = item.badge && item.badge.toLowerCase().includes('best');
                 const badgeClass = isBestSeller ? 'bg-captain-pink text-white' : 'bg-captain-cyan text-white';
+                
                 return `
-                <div onclick="openItemModal('${item.id}')" class="stitch-card rounded-2xl p-3 flex gap-3.5 items-center hover:border-captain-cyan/50 active:scale-[0.99] transition-all cursor-pointer">
+                <div onclick="${isSoldOut ? '' : `openItemModal('${item.id}')`}" 
+                     class="stitch-card rounded-2xl p-3 flex gap-3.5 items-center transition-all ${
+                         isSoldOut 
+                         ? 'opacity-55 grayscale cursor-not-allowed bg-slate-100/60' 
+                         : 'hover:border-captain-cyan/50 active:scale-[0.99] cursor-pointer'
+                     }">
                     <div class="relative w-24 h-24 rounded-xl overflow-hidden bg-slate-100 flex-shrink-0 border border-slate-100">
                         <img src="${item.image}" alt="${item.name}" loading="lazy" class="w-full h-full object-cover">
-                        ${item.badge ? `<span class="absolute top-1.5 left-1.5 ${badgeClass} text-[9px] font-mono font-bold uppercase px-2 py-0.5 rounded-full shadow-xs">${item.badge}</span>` : ''}
+                        ${
+                            isSoldOut 
+                            ? `<span class="absolute inset-0 bg-slate-900/60 flex items-center justify-center text-white font-heading font-extrabold text-[11px] uppercase tracking-wider">Habis</span>`
+                            : (item.badge ? `<span class="absolute top-1.5 left-1.5 ${badgeClass} text-[9px] font-mono font-bold uppercase px-2 py-0.5 rounded-full shadow-xs">${item.badge}</span>` : '')
+                        }
                     </div>
                     <div class="flex-1 min-w-0 flex flex-col justify-between h-full py-0.5">
                         <div>
                             <h3 class="font-heading font-bold text-base text-slate-800 truncate leading-snug">${item.name}</h3>
-                            <p class="text-[11px] text-slate-500 line-clamp-2 mt-0.5 leading-relaxed">${item.description}</p>
+                            <p class="text-[11px] text-slate-500 line-clamp-2 mt-0.5 leading-relaxed">${item.description || ''}</p>
                         </div>
                         <div class="flex justify-between items-center mt-2.5">
                             <span class="font-mono font-bold text-sm text-captain-cyan">${formatRupiah(item.price)}</span>
-                            <button class="bg-captain-cyanLight hover:bg-captain-cyan text-captain-cyan hover:text-white w-7 h-7 rounded-lg border border-captain-cyan/20 flex items-center justify-center transition-colors">
+                            <button ${isSoldOut ? 'disabled' : ''} class="${
+                                isSoldOut 
+                                ? 'bg-slate-200 text-slate-400 cursor-not-allowed' 
+                                : 'bg-captain-cyanLight hover:bg-captain-cyan text-captain-cyan hover:text-white'
+                            } w-7 h-7 rounded-lg border border-slate-200 flex items-center justify-center transition-colors">
                                 <i class="fa-solid fa-plus text-xs"></i>
                             </button>
                         </div>
                     </div>
                 </div>
-            `}).join('');
+                `;
+            }).join('');
         }
 
         function resetSearch() {
@@ -764,7 +860,28 @@
             else renderCartList();
         }
 
-        function sendOrderToWhatsApp() {
+let selectedPaymentMethod = 'TUNAI';
+
+        function selectPaymentMethod(method) {
+            selectedPaymentMethod = method.toUpperCase() === 'TUNAI' ? 'TUNAI' : 'QRIS';
+            const btnTunai = document.getElementById('pay-btn-tunai');
+            const btnQris = document.getElementById('pay-btn-qris');
+            
+            if (selectedPaymentMethod === 'TUNAI') {
+                btnTunai.className = "py-2 px-3 text-xs font-mono font-bold rounded-xl border border-captain-cyan bg-captain-cyan text-white shadow-xs transition-all flex items-center justify-center gap-1.5";
+                btnQris.className = "py-2 px-3 text-xs font-mono font-bold rounded-xl border border-slate-200 bg-slate-50 text-slate-600 hover:border-captain-cyan transition-all flex items-center justify-center gap-1.5";
+            } else {
+                btnQris.className = "py-2 px-3 text-xs font-mono font-bold rounded-xl border border-captain-cyan bg-captain-cyan text-white shadow-xs transition-all flex items-center justify-center gap-1.5";
+                btnTunai.className = "py-2 px-3 text-xs font-mono font-bold rounded-xl border border-slate-200 bg-slate-50 text-slate-600 hover:border-captain-cyan transition-all flex items-center justify-center gap-1.5";
+            }
+        }
+
+        async function sendOrderToWhatsApp() {
+            if (APP_CONFIG.isOpen === false) {
+                showToast("Maaf, kedai sedang tutup. Tidak dapat memesan!");
+                return;
+            }
+
             const customerName = document.getElementById('customer-name').value.trim();
             if (!customerName) {
                 showToast("Silakan isi nama Anda sebelum memesan!");
@@ -772,19 +889,65 @@
                 return;
             }
             if (cart.length === 0) return;
-            let message = `*[PESANAN BARU - MEJA ${currentTable}]*\nNama Pemesan: ${customerName}\n\n*Detail Pesanan:*\n`;
-            let totalPrice = 0;
+
+            // Generate No. Nota unik
+            const orderId = `CAP-${currentTable}-${Math.floor(1000 + Math.random() * 9000)}`;
+            const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+
+            // Ringkasan untuk database Sheets
+            const itemsSummary = cart.map(item => `${item.qty}x ${item.name}${item.options ? ` (${item.options})` : ''}`).join(', ');
+            const allNotes = cart.filter(item => item.note).map(item => `${item.name}: ${item.note}`).join(' | ');
+
+            // 1. Kirim Log ke Google Sheets dengan nilai yang 100% sesuai Data Validation
+            if (APP_CONFIG.menuApiUrl && APP_CONFIG.menuApiUrl.startsWith('http')) {
+                fetch(APP_CONFIG.menuApiUrl, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({
+                        action: 'WEB_CUSTOMER_ORDER',
+                        order_id: orderId,
+                        table: `Meja ${currentTable}`,
+                        customer_name: customerName,
+                        items_summary: itemsSummary,
+                        notes: allNotes || '-',
+                        total_price: totalPrice,
+                        payment_method: selectedPaymentMethod,
+                        status: 'MENUNGGU KONFIRMASI',
+                        items_json: JSON.stringify(cart.map(item => ({
+                            id: item.id, name: item.name, qty: item.qty, price: item.price,
+                            options: item.options || '', note: item.note || '', done: false
+                        })))
+                    })
+                }).catch(err => console.warn("Background logger error:", err));
+            }
+
+            // 2. Format Pesan WhatsApp
+            let message = `*[PESANAN BARU - MEJA ${currentTable}]*\n`;
+            message += `No. Nota: *${orderId}*\n`;
+            message += `Nama Pemesan: *${customerName}*\n`;
+            message += `Metode Bayar: *${selectedPaymentMethod}*\n\n`;
+            message += `*Detail Pesanan:*\n`;
+
             cart.forEach((item, idx) => {
                 const subtotal = item.price * item.qty;
-                totalPrice += subtotal;
                 const optText = item.options ? ` (${item.options})` : '';
                 message += `${idx + 1}. ${item.qty}x *${item.name}*${optText} - ${formatRupiah(subtotal)}\n`;
                 if (item.note) message += `   └ Catatan: _${item.note}_\n`;
             });
-            message += `\n*Total Pembayaran:* *${formatRupiah(totalPrice)}*\n\nMohon konfirmasi pesanan ini di kasir. Terima kasih!`;
+
+            message += `\n*Total Tagihan:* *${formatRupiah(totalPrice)}*\n\n`;
+            message += `_Pesanan tersimpan di sistem. Silakan konfirmasi & selesaikan pembayaran di kasir agar pesanan segera dibuat._`;
+
+            // Reset keranjang belanja
+            cart = [];
+            updateCartBadge();
+            closeCartModal();
+
+            // Buka WhatsApp
             window.open(`https://wa.me/${APP_CONFIG.whatsappNumber}?text=${encodeURIComponent(message)}`, '_blank');
         }
-
+        
         function showToast(message) {
             const toast = document.getElementById('toast');
             document.getElementById('toast-msg').textContent = message;
